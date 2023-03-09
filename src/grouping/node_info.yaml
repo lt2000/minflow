@@ -1,0 +1,15 @@
+nodes:
+- worker_address: 192.168.1.116:8001
+  scale_limit: 120
+- worker_address: 192.168.1.102:8001
+  scale_limit: 120
+- worker_address: 192.168.1.103:8001
+  scale_limit: 120
+- worker_address: 192.168.1.117:8001
+  scale_limit: 120
+- worker_address: 192.168.1.141:8001
+  scale_limit: 120
+# - worker_address: 172.20.185.156:8001
+#   scale_limit: 120
+# - worker_address: 172.20.185.157:8001
+#   scale_limit: 120
