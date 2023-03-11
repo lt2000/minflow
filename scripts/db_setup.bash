@@ -21,6 +21,6 @@ python3 couchdb_starter.py
 docker pull redis
 docker run -itd -p 8002:6379 --name redis redis
 # run grouping for all benchmarks
-cd ../src/grouping
+# cd ../src/grouping
 # python3 grouping.py video illgal_recognizer fileprocessing wordcount cycles epigenomics genome soykb
-python3 grouping.py wordcount
+# python3 grouping.py wordcount

@@ -1,8 +1,10 @@
-def test(a):
-    a.append(0)
+def test():
+    a = 2
+    b =  a
+    b = 1
+    print(a)
 
 if __name__ == '__main__':
-    a = [1,2,3]
-    print(a)
-    test(a)
-    print(a)
+
+    test()
+    

@@ -4,9 +4,9 @@ REDIS_PORT = 8002 # it follows the same configuration as created redis by docker
 REDIS_DB = 0
 GATEWAY_ADDR = '192.168.1.116:7000' # need to update as your private_ip
 MASTER_HOST = '192.168.1.116:8001' # need to update as your private_ip
-# WORKFLOW_YAML_ADDR = {'wordcount': '/home/k8s/little/faasflow/benchmark/wordcount/flat_workflow.yaml',
-#                       'wordcount-shuffle': '/home/k8s/little/faasflow/benchmark/wordcount-shuffle   /flat_workflow.yaml'}
-WORKFLOW_YAML_ADDR = {'wordcount-shuffle': '/home/k8s/little/faasflow/benchmark/wordcount-shuffle/flat_workflow.yaml'}
+# WORKFLOW_YAML_ADDR = {'wordcount': '/home/k8s/little/minflow/benchmark/wordcount/flat_workflow.yaml',
+#                       'wordcount-shuffle': '/home/k8s/little/minflow/benchmark/wordcount-shuffle   /flat_workflow.yaml'}
+WORKFLOW_YAML_ADDR = {'wordcount-shuffle': '/home/k8s/little/minflow/benchmark/wordcount-shuffle/flat_workflow.yaml'}
 NETWORK_BANDWIDTH = 25 * 1024 * 1024 / 4 # 25MB/s / 4
 NET_MEM_BANDWIDTH_RATIO = 15 # mem_time = net_time / 15
 CONTAINER_MEM = 256 * 1024 * 1024 # 256MB

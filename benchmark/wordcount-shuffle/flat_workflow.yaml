@@ -13,7 +13,7 @@ functions:
       size: 3383449
   next:
     type: shuffle
-    number: 8
+    split_ratio: 8
     nodes:
     - count
 - name: count
@@ -21,6 +21,7 @@ functions:
   runtime: 0.12
   scale: 3
   mem_usage: 0.25
+  split_ratio: 8
   input:
     filename:
       type: key
@@ -40,7 +41,7 @@ functions:
       size: 736992
   next:
     type: shuffle
-    number: 8
+    split_ratio: 8
     nodes:
     - merge
 - name: merge
@@ -48,6 +49,7 @@ functions:
   runtime: 0.05
   scale: 3
   mem_usage: 0.25
+  split_ratio: 8
   input:
     filename:
       type: key
