@@ -24,6 +24,13 @@ class Repository:
         db = self.couch[db_name]
         for name in function_info:
             db[name] = function_info[name]
+    
+    def save_bundling_info(self, bundling_info, db_name):
+        if db_name not in self.couch:
+            self.couch.create(db_name)
+        db = self.couch[db_name]
+        db.save({'bundling_info': bundling_info})
+
 
     def save_foreach_functions(self, foreach_functions, db_name):
         if db_name not in self.couch:

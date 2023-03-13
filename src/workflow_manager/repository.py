@@ -21,6 +21,13 @@ class Repository:
         for item in db:
             functions.append(db[item]['function_name'])
         return functions
+    
+    def get_bundling_info(self, db_name) -> List[str]:
+        db = self.couch[db_name]
+        for item in db:
+            doc = db[item]
+            if 'bundling_info' in doc:
+                return doc['bundling_info']
 
     def get_foreach_functions(self, db_name) -> List[str]:
         db = self.couch[db_name]

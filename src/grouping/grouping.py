@@ -365,6 +365,8 @@ def save_grouping_config(workflow: component.workflow, node_info, info_dict, inf
                               workflow.workflow_name + '_workflow_metadata')
     repo.save_all_addrs(list(node_info.keys()),
                         workflow.workflow_name + '_workflow_metadata')
+    repo.save_bundling_info(workflow.bundling_info,
+                        workflow.workflow_name + '_workflow_metadata')
     # repo.save_critical_path_functions(
     #     critical_path_functions, workflow.workflow_name + '_workflow_metadata')
 

@@ -188,6 +188,15 @@ class WorkerSPManager:
                     self.trigger_function(state, next_func)
                     break
 
+    def schedule_hash(bundling_stage_idx, bundling_group_idx, bundling_intragroup_idx, phase):
+        input = []
+        output = []
+        if phase == 1:
+            pass
+        elif phase == 2:
+            pass
+
+
     def run_foreach(self, state: WorkflowState, info: Any) -> None:
         start = time.time()
         all_keys = repo.get_keys(state.request_id)  # {'split_keys': ['1', '2', '3'], 'split_keys_2': ...}
@@ -195,8 +204,32 @@ class WorkerSPManager:
         for arg in info['input']:
             if info['input'][arg]['type'] == 'key':
                 foreach_keys.append(info['input'][arg]['parameter'])
+
         jobs = []
-        for i in range(len(all_keys[foreach_keys[0]])):
+        if info['function_name'].startswith('bundling'):
+                bundling_info = repo.get_bundling_info(self.meta_db)
+                split_name = info['function_name'].split('-')
+                bundling_stage_idx = int(split_name[1])
+                bundling_group_idx = int(split_name[2])
+                bundling_intragroup_idx = i
+                file_num = bundling_info[bundling_stage_idx]
+                input = []
+                output = []
+
+                # first phase in a bundled function
+                if bundling_stage_idx == 0:
+                    input.append(all_keys[foreach_keys[0]][i])
+                    _, output = self.schedule_hash(bundling_stage_idx, bundling_group_idx, bundling_intragroup_idx, 1)
+                else:
+                    input, output = self.schedule_hash(bundling_stage_idx, bundling_group_idx, bundling_intragroup_idx, 1)
+                first_phase = {'input':input,'output':output}
+              
+                # second phase in a bundled function
+                input, output = self.schedule_hash(bundling_stage_idx, bundling_group_idx, bundling_intragroup_idx, 2)
+                second_phase = {'input':input,'output':output}
+        else:
+            file_num = all_keys[foreach_keys[0]][info['function_name']]
+        for i in range(file_num):
             keys = {}  # {'split_keys': '1', 'split_keys_2': '2'}
             for k in foreach_keys:
                 keys[k] = all_keys[k][i]
