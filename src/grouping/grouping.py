@@ -54,6 +54,10 @@ def create_workflow(part, func_list, workflow: component.workflow):
         global_input = workflow.global_input
     else:
         global_input = {}
+
+    if part == 1:
+        bundling_info = workflow.bundling_info
+    else: bundling_info = []
     total = len(func_list)
     start_functions = []
     nodes = {}
@@ -73,7 +77,7 @@ def create_workflow(part, func_list, workflow: component.workflow):
         if func in workflow.merge_functions:
             merge_functions.add(func)
 
-    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions)
+    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_info)
 
 # print workflow
 
@@ -345,7 +349,7 @@ def get_max_mem_usage(workflow: component.workflow):
     return max_mem_usage
 
 
-def save_grouping_config(workflow: component.workflow, node_info, info_dict, info_raw_dict, critical_path_functions):
+def save_grouping_config(workflow: component.workflow, node_info, info_dict, info_raw_dict):
     repo = repository.Repository(workflow.workflow_name)
     repo.save_function_info(
         info_dict, workflow.workflow_name + '_function_info')
@@ -361,8 +365,8 @@ def save_grouping_config(workflow: component.workflow, node_info, info_dict, inf
                               workflow.workflow_name + '_workflow_metadata')
     repo.save_all_addrs(list(node_info.keys()),
                         workflow.workflow_name + '_workflow_metadata')
-    repo.save_critical_path_functions(
-        critical_path_functions, workflow.workflow_name + '_workflow_metadata')
+    # repo.save_critical_path_functions(
+    #     critical_path_functions, workflow.workflow_name + '_workflow_metadata')
 
 
 def get_grouping_config(workflow: component.workflow, node_info_dict):
@@ -373,15 +377,22 @@ def get_grouping_config(workflow: component.workflow, node_info_dict):
     max_mem_usage = get_max_mem_usage(workflow)
     # print('max_mem_usage', max_mem_usage)
     w0, w1, w2 = split_workflow(workflow)
-    print()
-
+    node_info_list = list(node_info_dict.keys())
+    node_number = len(node_info_list)
+    bundling_info = workflow.bundling_info
+    w1_group_detail = []
+    for i in range(len(bundling_info)):
+        for j in range(bundling_info[i]):
+            temp_set = ('bundling-{}-{}'.format(i, j), )
+            w1_group_detail.append(temp_set)
+            group_ip[temp_set] = node_info_list[j%node_number]
     w0_group_detail, w0_critical_path_functions = grouping(w0, node_info_dict)
     w2_group_detail, w2_critical_path_functions = grouping(w2, node_info_dict)
-    print(w0_group_detail)
-    print(w2_group_detail)
+    group_detail = w0_group_detail + w1_group_detail + w2_group_detail
+    print(group_detail)
     print(group_ip)
-    
-    exit(0)
+    print(group_scale)
+
 
     # building function info: both optmized and raw version
     ip_list = list(node_info_dict.keys())
@@ -429,7 +440,7 @@ def get_grouping_config(workflow: component.workflow, node_info_dict):
                 if function_info_dict[next_name]['to'] != function_info_dict[name]['to']:
                     function_info_dict[name]['to'] = 'DB+MEM'
 
-    return node_info_dict, function_info_dict, function_info_raw_dict, critical_path_functions
+    return node_info_dict, function_info_dict, function_info_raw_dict # , critical_path_functions
 
 
 
@@ -449,7 +460,7 @@ if __name__ == '__main__':
     workflow_pool = sys.argv[1:]
     for workflow_name in workflow_pool:
         workflow = parse_yaml_bundling.parse(workflow_name)
-        node_info, function_info, function_info_raw, critical_path_functions = get_grouping_config(
+        node_info, function_info, function_info_raw = get_grouping_config(
             workflow, node_info_dict)
         save_grouping_config(workflow, node_info, function_info,
-                             function_info_raw, critical_path_functions)
+                             function_info_raw)
