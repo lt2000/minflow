@@ -63,7 +63,7 @@ class Store:
                 param = self.input[k]['parameter']  # supporting inputMapping
             else:
                 param = k
-            if param in self.keys:  # if it's a foreach key
+            if param in self.keys:  # if it's a foreach key TODO
                 self.fetch_dict[k] = self.keys[param]
             else:  # regular keys
                 redis_key_1 = self.request_id + '_' + param
@@ -127,6 +127,8 @@ class Store:
         for k in output_result:
             if k in self.output and self.output[k]['type'] == 'keys':  # it's the keys for foreach
                 self.put_keys(k)
+
+        # add something? bundling function?
         if 'DB' in self.to:
             for k in output_result:
                 if k not in self.output or self.output[k]['type'] != 'keys':

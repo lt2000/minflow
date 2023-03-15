@@ -30,6 +30,7 @@ def parse(workflow_name):
     parent_cnt = dict()
     shuffle_functions = set()
     foreach_functions = set()
+    bundling_functions = set()
     merge_functions = set()   # ???
     total = 0
     if 'global_input' in data:
@@ -38,7 +39,7 @@ def parse(workflow_name):
             global_input[parameter] = data['global_input'][key]['size']
     functions = data['functions']
     parent_cnt[functions[0]['name']] = 0     # start function
-    bundling_info = []  # Consider the case where there is only one shuffle
+    bundling_info = {}  # Consider the case where there is only one shuffle
     for function in functions:
         name = function['name']
         source = function['source']
@@ -74,17 +75,20 @@ def parse(workflow_name):
                 net = network.min_generator(function['next']['split_ratio'])
                 foreach_flag = True
                 if name in shuffle_functions:   # current function is a mapper
+                    bundling_info['bundling_foreach_num'] = []
+                    bundling_info['split_ratio'] = net.m
+                    bundling_info['group_size'] = [net.group_num[0]//i for i in net.group_num]
                     reducer_foreach_num = net.m // net.foreach_size[-1]
                     for i in range(0, net.shuffle_n, 2):
                         temp_foreach_num = net.m // net.foreach_size[i]
-                        bundling_info.append(temp_foreach_num)
+                        bundling_info['bundling_foreach_num'].append(temp_foreach_num)
                         for j in range(temp_foreach_num):
                             next_function = []
                             next = []
                             nextDis = []
                             # bundle function and name the new function
                             name = 'bundling-' + str(i//2) + '-' + str(j)
-                            
+                            bundling_functions.add(name)
                             # determine the successor of the new function
                             if i + 1 == net.shuffle_n - 1:  # the number of shuffle is even and split merge function
                                 for k in range(net.m // net.foreach_size[i+2]):
@@ -206,7 +210,7 @@ def parse(workflow_name):
         for next_node in nodes[name].next:
             nodes[next_node].prev.append(name)
     
-    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_info)
+    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_functions, bundling_info)
 
 
 if __name__ == "__main__":

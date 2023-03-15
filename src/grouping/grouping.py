@@ -12,6 +12,7 @@ max_mem_usage = 0
 group_ip = {}
 group_scale = {}
 
+
 def topo_sort(workflow):
     in_degree_vec = dict()
     q = queue.Queue()
@@ -57,7 +58,11 @@ def create_workflow(part, func_list, workflow: component.workflow):
 
     if part == 1:
         bundling_info = workflow.bundling_info
-    else: bundling_info = []
+        bundling_functions = workflow.bundling_functions
+    else:
+        bundling_info = []
+        bundling_functions = set()
+
     total = len(func_list)
     start_functions = []
     nodes = {}
@@ -77,7 +82,7 @@ def create_workflow(part, func_list, workflow: component.workflow):
         if func in workflow.merge_functions:
             merge_functions.add(func)
 
-    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_info)
+    return component.workflow(workflow_name, start_functions, nodes, global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_functions, bundling_info)
 
 # print workflow
 
@@ -363,10 +368,12 @@ def save_grouping_config(workflow: component.workflow, node_info, info_dict, inf
         workflow.foreach_functions, workflow.workflow_name + '_workflow_metadata')
     repo.save_merge_functions(workflow.merge_functions,
                               workflow.workflow_name + '_workflow_metadata')
+    repo.save_bundling_functions(
+        workflow.bundling_functions, workflow.workflow_name + '_workflow_metadata')
     repo.save_all_addrs(list(node_info.keys()),
                         workflow.workflow_name + '_workflow_metadata')
     repo.save_bundling_info(workflow.bundling_info,
-                        workflow.workflow_name + '_workflow_metadata')
+                            workflow.workflow_name + '_workflow_metadata')
     # repo.save_critical_path_functions(
     #     critical_path_functions, workflow.workflow_name + '_workflow_metadata')
 
@@ -387,14 +394,13 @@ def get_grouping_config(workflow: component.workflow, node_info_dict):
         for j in range(bundling_info[i]):
             temp_set = ('bundling-{}-{}'.format(i, j), )
             w1_group_detail.append(temp_set)
-            group_ip[temp_set] = node_info_list[j%node_number]
+            group_ip[temp_set] = node_info_list[j % node_number]
     w0_group_detail, w0_critical_path_functions = grouping(w0, node_info_dict)
     w2_group_detail, w2_critical_path_functions = grouping(w2, node_info_dict)
     group_detail = w0_group_detail + w1_group_detail + w2_group_detail
     print(group_detail)
     print(group_ip)
     print(group_scale)
-
 
     # building function info: both optmized and raw version
     ip_list = list(node_info_dict.keys())
@@ -442,10 +448,8 @@ def get_grouping_config(workflow: component.workflow, node_info_dict):
                 if function_info_dict[next_name]['to'] != function_info_dict[name]['to']:
                     function_info_dict[name]['to'] = 'DB+MEM'
 
-    return node_info_dict, function_info_dict, function_info_raw_dict # , critical_path_functions
-
-
-
+    # , critical_path_functions
+    return node_info_dict, function_info_dict, function_info_raw_dict
 
 
 if __name__ == '__main__':

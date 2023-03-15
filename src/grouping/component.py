@@ -28,7 +28,7 @@ class function:
 
 
 class workflow:
-    def __init__(self, workflow_name, start_functions, nodes: Dict[str, function], global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_info):
+    def __init__(self, workflow_name, start_functions, nodes: Dict[str, function], global_input, total, parent_cnt, foreach_functions, merge_functions, bundling_functions, bundling_info):
         self.workflow_name = workflow_name
         self.start_functions = start_functions
         self.nodes = nodes  # dict: {name: function()}
@@ -37,4 +37,5 @@ class workflow:
         self.parent_cnt = parent_cnt  # dict: {name: parent_cnt}
         self.foreach_functions = foreach_functions
         self.merge_functions = merge_functions
+        self.bundling_functions = bundling_functions
         self.bundling_info = bundling_info

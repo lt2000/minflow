@@ -31,7 +31,6 @@ class Repository:
         db = self.couch[db_name]
         db.save({'bundling_info': bundling_info})
 
-
     def save_foreach_functions(self, foreach_functions, db_name):
         if db_name not in self.couch:
             self.couch.create(db_name)
@@ -43,6 +42,12 @@ class Repository:
             self.couch.create(db_name)
         db = self.couch[db_name]
         db.save({'merge_functions': list(merge_functions)})
+
+    def save_bundling_functions(self, bundling_functions, db_name):
+        if db_name not in self.couch:
+            self.couch.create(db_name)
+        db = self.couch[db_name]
+        db.save({'bundling_functions': list(bundling_functions)})
 
     def save_critical_path_functions(self, critical_path_functions, db_name):
         if db_name not in self.couch:

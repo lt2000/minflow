@@ -70,6 +70,47 @@ class min_generator:
                 self.foreach_size.append(self.m)
         return 0
 
+    def baseline_hash(self, idx, split_ratio, group_size, function_stage_idx):
+        input = []
+        output = []
+        function_stage_num = len(group_size)
+        # output
+        if function_stage_idx != function_stage_num - 1:
+            for next_function_idx in range(split_ratio):
+                if (idx // group_size[function_stage_idx+1]) == ( next_function_idx // group_size[function_stage_idx+1]) and idx % group_size[function_stage_idx] == (next_function_idx // (group_size[function_stage_idx+1] // group_size[function_stage_idx])) % group_size[function_stage_idx]:
+                    output.append(next_function_idx)
+        # input
+        if function_stage_idx != 0:
+            for pre_function_idx in range(split_ratio):
+                if (pre_function_idx // group_size[function_stage_idx]) == (idx // group_size[function_stage_idx]) and pre_function_idx % group_size[function_stage_idx-1] == (idx // (group_size[function_stage_idx] // group_size[function_stage_idx-1])) % group_size[function_stage_idx-1]:
+                    input.append(pre_function_idx)
+
+        return input, output
+    
+    def schedule_hash_test(self, idx, split_ratio, group_size, function_stage_idx, input, output):
+       new_input = []
+       new_output = []
+       fucntion_stage_num = len(group_size)
+       if function_stage_idx == 0:
+           new_input = input
+           new_output = output
+       elif function_stage_idx == fucntion_stage_num - 1:
+           new_output = output
+           if fucntion_stage_num % 2 == 0:
+               for base_idx in input:
+                   new_input.append(base_idx // group_size[function_stage_idx - 1] + (
+                       base_idx % group_size[function_stage_idx - 1]) * (split_ratio // group_size[function_stage_idx - 1]))
+           else:
+               new_input = input
+       elif function_stage_idx % 2 != 0:
+           new_input = input
+           for base_idx in output:
+               new_output.append(base_idx // group_size[function_stage_idx + 1] + (
+                   base_idx % group_size[function_stage_idx + 1]) * (split_ratio // group_size[function_stage_idx + 1]))
+       elif function_stage_idx % 2 == 0:
+           origin_idx = idx // (split_ratio // group_size[function_stage_idx]) + (idx % (split_ratio // group_size[function_stage_idx])) * group_size[function_stage_idx]
+           new_input, new_output = self.baseline_hash(origin_idx, split_ratio, group_size, function_stage_idx)
+       return new_input, new_output
 
     def schedule_hash(self, layer, idx, down):
         m = self.m
@@ -102,8 +143,10 @@ class min_generator:
                 for j in range(right_nodes):
                     # baseline network
                     if (i // group_size[x+1]) == (j // group_size[x+1]) and i % group_size[x] == (j // (group_size[x+1] // group_size[x])) % group_size[x]:
+                        # schedule network
                         G.add_edge(self.schedule_hash(
                             x, i, 0)+sum(layer_sizes[:x]), self.schedule_hash(x, j, 1)+sum(layer_sizes[:x+1]))
+                        # G.add_edge(i+sum(layer_sizes[:x]), j+sum(layer_sizes[:x+1]))
 
         pos = nx.get_node_attributes(G, 'pos')
         # 把每个节点中的位置pos信息导出来
@@ -121,8 +164,18 @@ class min_generator:
 
 
 if __name__ == "__main__":
-    net = min_generator(8)
+    net = min_generator(9)
     # net.min_optimized(net.m)
-    print(net.group_num)
-    print(net.group_ratio)
-    print(net.foreach_size)
+    # print(net.group_num)
+    # print(net.group_ratio)
+    # print(net.foreach_size)
+    net.min_plot()
+    group_size = [net.group_num[0]//i for i in net.group_num]
+    idx = 2
+    print(group_size)
+    function_stage_idx = 2
+    input,output = net.baseline_hash(idx, net.m, group_size, function_stage_idx)
+    new_input, new_output = net.schedule_hash_test(idx, net.m, group_size, function_stage_idx, input, output)
+    print(new_input)
+    print(new_output)
+
